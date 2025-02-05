@@ -1,0 +1,12 @@
+{
+  "name": "overwatch-app",
+  "version": "1.0.0",
+  "description": "Example app for overwatch",
+  "scripts": {
+    "start": "node app.js",
+    "dev": "node --watch app.js"
+  },
+  "dependencies": {
+    "express": "^4.21.2"
+  }
+}
