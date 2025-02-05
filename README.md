@@ -1,3 +1,4 @@
+```
 ├── docker-compose.yml          # Main Docker Compose file
 ├── app/                        # Example Express.js app
 │   ├── app.js                  # Main Express app
@@ -12,3 +13,4 @@
 │   └── datasources.yaml        # Grafana data source configuration
 ├── README.md                   # Project documentation
 └── LICENSE                     # Open-source license
+```
