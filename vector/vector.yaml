@@ -1,0 +1,43 @@
+# Source: Read logs from the application log files
+sources:
+  app_logs:
+    type: file
+    include:
+      - /app/logs/*.log
+    read_from: beginning
+
+# Transform: Parse the logs into structured data
+transforms:
+  parse_logs:
+    type: remap
+    inputs:
+      - app_logs
+    source: |
+      parsed, err = parse_json(.message)
+      if err != null {
+        log("Failed to parse JSON", level: "error")
+      } else {
+        .timestamp = parsed.timestamp
+        .level = parsed.level
+        .message = parsed.message
+        .service = "app"
+      }
+
+# Sink: Send parsed logs to ClickHouse
+sinks:
+  clickhouse_sink:
+    type: clickhouse
+    inputs:
+      - parse_logs
+    endpoint: "${CLICKHOUSE_ENDPOINT}"
+    database: "overwatch"
+    table: "app_logs"
+    compression: gzip
+    format: json_each_row
+    auth:
+      strategy: basic
+      user: "${CLICKHOUSE_USER}"
+      password: "${CLICKHOUSE_PASSWORD}"
+    batch:
+      max_size: 1048576
+      timeout_secs: 5

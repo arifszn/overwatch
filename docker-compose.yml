@@ -28,6 +28,27 @@ services:
     environment:
       - CLICKHOUSE_USER=${CLICKHOUSE_USER}
       - CLICKHOUSE_PASSWORD=${CLICKHOUSE_PASSWORD}
+    healthcheck:
+      test: ["CMD", "clickhouse-client", "--host=localhost", "--query=SELECT 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    networks:
+      - overwatch
+
+  vector:
+    image: timberio/vector:0.44.0-debian
+    container_name: vector
+    volumes:
+      - ./vector/vector.yaml:/etc/vector/vector.yaml
+      - ./app/logs:/app/logs
+    depends_on:
+      clickhouse:
+        condition: service_healthy
+    environment:
+      - CLICKHOUSE_ENDPOINT=http://clickhouse:${CLICKHOUSE_HTTP_PORT}
+      - CLICKHOUSE_USER=${CLICKHOUSE_USER}
+      - CLICKHOUSE_PASSWORD=${CLICKHOUSE_PASSWORD}
     networks:
       - overwatch
 

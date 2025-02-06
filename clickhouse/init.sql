@@ -1,14 +1,14 @@
 -- Create a database
 CREATE DATABASE IF NOT EXISTS overwatch;
 
--- Create a table to store log entries with a 30-day TTL
+-- Create a table to store app logs
 CREATE TABLE IF NOT EXISTS overwatch.app_logs
 (
-    timestamp DateTime,
+    timestamp DateTime64(3),
     level String,
     message String,
     service String
 )
 ENGINE = MergeTree()
 ORDER BY (timestamp)
-TTL timestamp + INTERVAL 30 DAY; -- Auto cleanup after 30 days
+TTL toDateTime(timestamp) + INTERVAL 30 DAY; -- Auto cleanup after 30 days

@@ -4,7 +4,7 @@ const app = express();
 const port = process.env.APP_PORT;
 
 app.get('/', (req, res) => {
-  logger.info('API request received.', { ip: req.ip });
+  logger.info('API request received. IP: ' + req.ip);
   res.send('Hello World!');
 });
 
