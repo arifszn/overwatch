@@ -49,9 +49,9 @@ docker-compose up -d
 ```
 
 3. Access the services:
-- Grafana: http://localhost:3000 (default credentials: admin/admin)
+- Grafana: http://localhost:3001 (credentials: admin/password)
 - ClickHouse: localhost:8123 (HTTP) or localhost:9000 (native)
-- Example App: http://localhost:8080
+- Example App: http://localhost:3000
 
 ## Configuration
 
