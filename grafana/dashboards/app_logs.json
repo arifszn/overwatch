@@ -43,7 +43,7 @@
           "rawSql": "SELECT ServiceName, count() as count FROM overwatch.app_logs GROUP BY ServiceName ORDER BY count DESC LIMIT 10"
         }
       ],
-      "gridPos": { "x": 9, "y": 0, "w": 6, "h": 4 }
+      "gridPos": { "x": 9, "y": 0, "w": 15, "h": 4 }
     },
     {
       "title": "Log Severity Distribution",
@@ -54,7 +54,7 @@
           "rawSql": "SELECT SeverityText, count() as count FROM overwatch.app_logs GROUP BY SeverityText"
         }
       ],
-      "gridPos": { "x": 0, "y": 4, "w": 4, "h": 4 }
+      "gridPos": { "x": 0, "y": 4, "w": 6, "h": 6 }
     },
     {
       "title": "Logs Over Time",
@@ -65,7 +65,7 @@
           "rawSql": "SELECT toStartOfMinute(Timestamp) as time, count() as value FROM overwatch.app_logs GROUP BY time ORDER BY time"
         }
       ],
-      "gridPos": { "x": 4, "y": 4, "w": 11, "h": 6 }
+      "gridPos": { "x": 6, "y": 4, "w": 18, "h": 6 }
     },
     {
       "title": "Recent Logs",
@@ -76,7 +76,7 @@
           "rawSql": "SELECT Timestamp, SeverityText, Body, ServiceName, TraceId, SpanId FROM overwatch.app_logs ORDER BY Timestamp DESC LIMIT 10"
         }
       ],
-      "gridPos": { "x": 0, "y": 10, "w": 15, "h": 6 }
+      "gridPos": { "x": 0, "y": 10, "w": 24, "h": 6 }
     }
   ]
 }
