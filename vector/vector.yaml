@@ -17,10 +17,7 @@ transforms:
       if err != null {
         log("Failed to parse JSON", level: "error")
       } else {
-        .timestamp = parsed.timestamp
-        .level = parsed.level
-        .message = parsed.message
-        .service = "app"
+        . = parsed
       }
 
 # Sink: Send parsed logs to ClickHouse
@@ -40,4 +37,3 @@ sinks:
       password: "${CLICKHOUSE_PASSWORD}"
     batch:
       max_size: 1048576
-      timeout_secs: 5

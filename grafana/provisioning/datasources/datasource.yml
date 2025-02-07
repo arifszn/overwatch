@@ -8,5 +8,9 @@ datasources:
       host: ${CLICKHOUSE_HOST}
       username: ${CLICKHOUSE_USER}
       tlsSkipVerify: false
+      logs:
+        defaultDatabase: overwatch
+        defaultTable: app_logs
+        otelEnabled: true
     secureJsonData:
       password: ${CLICKHOUSE_PASSWORD}

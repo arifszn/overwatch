@@ -1,0 +1,82 @@
+{
+  "title": "Application Logs",
+  "panels": [
+    {
+      "title": "Total Logs",
+      "type": "stat",
+      "datasource": "ClickHouse",
+      "targets": [
+        {
+          "rawSql": "SELECT count() as value FROM overwatch.app_logs"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 0, "w": 3, "h": 4 }
+    },
+    {
+      "title": "Total Error Logs",
+      "type": "stat",
+      "datasource": "ClickHouse",
+      "targets": [
+        {
+          "rawSql": "SELECT count() as value FROM overwatch.app_logs WHERE SeverityText = 'ERROR'"
+        }
+      ],
+      "gridPos": { "x": 3, "y": 0, "w": 3, "h": 4 }
+    },
+    {
+      "title": "Error Rate",
+      "type": "stat",
+      "datasource": "ClickHouse",
+      "targets": [
+        {
+          "rawSql": "SELECT (countIf(SeverityText = 'ERROR') / count()) * 100 as value FROM overwatch.app_logs"
+        }
+      ],
+      "gridPos": { "x": 6, "y": 0, "w": 3, "h": 4 }
+    },
+    {
+      "title": "Top Services by Log Volume",
+      "type": "barchart",
+      "datasource": "ClickHouse",
+      "targets": [
+        {
+          "rawSql": "SELECT ServiceName, count() as count FROM overwatch.app_logs GROUP BY ServiceName ORDER BY count DESC LIMIT 10"
+        }
+      ],
+      "gridPos": { "x": 9, "y": 0, "w": 6, "h": 4 }
+    },
+    {
+      "title": "Log Severity Distribution",
+      "type": "piechart",
+      "datasource": "ClickHouse",
+      "targets": [
+        {
+          "rawSql": "SELECT SeverityText, count() as count FROM overwatch.app_logs GROUP BY SeverityText"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 4, "w": 4, "h": 4 }
+    },
+    {
+      "title": "Logs Over Time",
+      "type": "timeseries",
+      "datasource": "ClickHouse",
+      "targets": [
+        {
+          "rawSql": "SELECT toStartOfMinute(Timestamp) as time, count() as value FROM overwatch.app_logs GROUP BY time ORDER BY time"
+        }
+      ],
+      "gridPos": { "x": 4, "y": 4, "w": 11, "h": 6 }
+    },
+    {
+      "title": "Recent Logs",
+      "type": "table",
+      "datasource": "ClickHouse",
+      "targets": [
+        {
+          "rawSql": "SELECT Timestamp, SeverityText, Body, ServiceName, TraceId, SpanId FROM overwatch.app_logs ORDER BY Timestamp DESC LIMIT 10"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 10, "w": 15, "h": 6 }
+    }
+  ]
+}
