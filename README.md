@@ -10,8 +10,6 @@
 ├── vector/                     # Vector configurations
 │   └── vector.yaml             # Vector configuration
 ├── grafana/                    # Grafana configurations
-│   ├── dashboards/             # Pre-built Grafana dashboards
-│   └── datasources.yaml        # Grafana data source configuration
 ├── README.md                   # Project documentation
 └── LICENSE                     # Open-source license
 ```

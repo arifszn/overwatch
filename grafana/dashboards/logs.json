@@ -1,0 +1,85 @@
+{
+  "title": "Application Logs",
+  "panels": [
+    {
+      "title": "Total Logs",
+      "type": "stat",
+      "datasource": "ClickHouse",
+      "targets": [
+        {
+          "rawSql": "SELECT count() as value FROM overwatch.app_logs"
+        }
+      ],
+      "gridPos": {
+        "x": 0,
+        "y": 0,
+        "w": 6,
+        "h": 6
+      }
+    },
+    {
+      "title": "Log Levels Distribution",
+      "type": "piechart",
+      "datasource": "ClickHouse",
+      "targets": [
+        {
+          "rawSql": "SELECT level, count() as count FROM overwatch.app_logs GROUP BY level"
+        }
+      ],
+      "gridPos": {
+        "x": 6,
+        "y": 0,
+        "w": 6,
+        "h": 6
+      }
+    },
+    {
+      "title": "Logs Over Time",
+      "type": "timeseries",
+      "datasource": "ClickHouse",
+      "targets": [
+        {
+          "rawSql": "SELECT toStartOfMinute(timestamp) as time, count() as value FROM overwatch.app_logs GROUP BY time ORDER BY time"
+        }
+      ],
+      "gridPos": {
+        "x": 0,
+        "y": 6,
+        "w": 12,
+        "h": 8
+      }
+    },
+    {
+      "title": "Top Services by Log Volume",
+      "type": "barchart",
+      "datasource": "ClickHouse",
+      "targets": [
+        {
+          "rawSql": "SELECT service, count() as count FROM overwatch.app_logs GROUP BY service ORDER BY count DESC LIMIT 10"
+        }
+      ],
+      "gridPos": {
+        "x": 12,
+        "y": 0,
+        "w": 6,
+        "h": 6
+      }
+    },
+    {
+      "title": "Recent Logs",
+      "type": "table",
+      "datasource": "ClickHouse",
+      "targets": [
+        {
+          "rawSql": "SELECT timestamp, level, message, service FROM overwatch.app_logs ORDER BY timestamp DESC LIMIT 10"
+        }
+      ],
+      "gridPos": {
+        "x": 18,
+        "y": 0,
+        "w": 6,
+        "h": 6
+      }
+    }
+  ]
+}

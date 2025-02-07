@@ -30,7 +30,7 @@ services:
       - CLICKHOUSE_PASSWORD=${CLICKHOUSE_PASSWORD}
     healthcheck:
       test: ["CMD", "clickhouse-client", "--host=localhost", "--query=SELECT 1"]
-      interval: 30s
+      interval: 15s
       timeout: 10s
       retries: 5
     networks:
@@ -49,6 +49,29 @@ services:
       - CLICKHOUSE_ENDPOINT=http://clickhouse:${CLICKHOUSE_HTTP_PORT}
       - CLICKHOUSE_USER=${CLICKHOUSE_USER}
       - CLICKHOUSE_PASSWORD=${CLICKHOUSE_PASSWORD}
+    networks:
+      - overwatch
+
+  grafana:
+    image: grafana/grafana-oss:latest
+    container_name: grafana
+    ports:
+      - ${GRAFANA_PORT}:3000
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning
+      - ./grafana/dashboards:/var/lib/grafana/dashboards
+      - ./grafana/data:/var/lib/grafana
+    environment:
+      - GF_INSTALL_PLUGINS=grafana-clickhouse-datasource
+      - GF_SECURITY_ADMIN_USER=${GRAFANA_ADMIN_USER}
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD}
+      - CLICKHOUSE_USER=${CLICKHOUSE_USER}
+      - CLICKHOUSE_PASSWORD=${CLICKHOUSE_PASSWORD}
+      - CLICKHOUSE_HOST=clickhouse
+      - CLICKHOUSE_PORT=${CLICKHOUSE_NATIVE_PORT}
+    depends_on:
+      clickhouse:
+        condition: service_healthy
     networks:
       - overwatch
 
