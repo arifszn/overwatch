@@ -104,15 +104,118 @@ Grafana comes pre-configured with:
 - Sample dashboards for log visualization
 - Basic alerting rules
 
-## Maintenance
+## Deep Dive into Components
 
-### Log Retention
-- Configure log retention in `clickhouse/init.sql`
-- Default retention period: 30 days
+### ClickHouse
 
-### Scaling
-- Vector can be scaled horizontally for increased log processing
-- ClickHouse supports cluster deployment for larger datasets
+ClickHouse is an open-source columnar database management system designed for large-scale analytics and business intelligence workloads. It is known for its high performance in processing and querying vast amounts of data.
+
+#### Protocol Support
+
+ClickHouse supports multiple wire protocols, including MySQL and others, which allows clients that do not have native ClickHouse connectors to interact with it using the MySQL or other protocols.
+
+#### Why is ClickHouse so fast?
+
+ClickHouse achieves high performance through several optimizations:
+
+- **Columnar Storage:** Stores data by columns rather than rows, which is efficient for analytical queries that aggregate data across many rows but fewer columns.
+- **Vectorized Execution:** Processes data in batches, allowing for better CPU utilization and reduced overhead.
+- **Native Compression:** Uses efficient compression algorithms that are optimized for both speed and space.
+- **Asynchronous I/O and Multi-threading:** Allows for concurrent reading and processing of data.
+
+#### Column-Oriented Database
+
+A column-oriented database stores data by columns rather than by rows. This architecture is particularly advantageous for read-heavy workloads, such as analytics and reporting, where queries often aggregate data across many rows but only a few columns. By storing columns separately, the database can read and process only the necessary data, reducing I/O operations and improving query performance.
+
+#### ClickHouse Engines
+
+ClickHouse supports several engines, but the most commonly used are:
+
+- **MergeTree:** The most universal and functional table engines for high-load tasks.
+- **ReplacingMergeTree:** A variant of MergeTree that allows for deduplication of data.
+- **Log:** Effective when you need to quickly write many small tables with a low latency.
+
+##### Log Engine
+
+- **Use Case:** Suitable for small datasets (<1 million rows), temporary or non-critical data, and simple setups with minimal configuration.
+- **Features:** Limited features compared to MergeTree engines; lacks indexing, partitioning, and replication.
+
+##### MergeTree Engine
+
+- **Use Case:** Ideal for large datasets (millions or billions of rows), requiring high write throughput and efficient querying with advanced features like partitioning, indexing, compression, and TTL.
+- **Scalability:** Supports horizontal scaling and replication for high availability.
+
+##### Choosing the Right Engine
+
+- For small, temporary datasets without complex requirements, the Log engine is sufficient.
+- For larger datasets with performance and feature requirements, the MergeTree engine family is recommended.
+
+We will be using the **MergeTree** engine for this project.
+
+#### TTL in ClickHouse
+
+Time-to-Live (TTL) policies in ClickHouse allow automatic deletion of data after a specified period. This is useful for managing log data retention, ensuring that old logs are automatically removed to save storage space and maintain performance.
+
+```sql  
+TTL toDateTime(Timestamp) + INTERVAL 30 DAY; -- Auto cleanup after 30 days
+```
+
+#### Docker Configuration
+
+In the Docker setup, the `init.sql` script is mounted to `/docker-entrypoint-initdb.d/init.sql`. This is a standard practice in Dockerized ClickHouse setups. When the ClickHouse container starts, it executes any SQL scripts found in the `/docker-entrypoint-initdb.d/` directory, allowing for automatic initialization of the database schema and data.
+
+#### Ports in ClickHouse
+
+ClickHouse uses multiple ports for different protocols:
+
+- **Port 9000:** Native ClickHouse protocol, optimized for performance.
+- **Port 8123:** HTTP protocol, compatible with the MySQL protocol, making it accessible to a wider range of clients.
+
+Using both ports provides flexibility in how clients connect to ClickHouse, balancing between performance and compatibility.
+
+#### Schema-on-Write vs. Schema-less
+
+ClickHouse is a schema-on-write database, meaning the schema is defined at the time of writing data. This approach allows for efficient storage and querying, as the database knows the structure of the data in advance. In contrast, schema-less databases like Cassandra offer more flexibility in data modeling but may sacrifice some performance and query efficiency.
+
+
+### Vector
+
+Vector is a data pipeline tool that collects, transforms, and routes logs, metrics, and traces. It is designed to be highly efficient, reliable, and easy to configure.
+
+#### Key Features
+
+- **Collect:** Vector can collect data from various sources, including files, sockets, and other data streams.
+- **Transform:** It provides a wide range of transformations to structure and enrich log data, making it ready for analysis.
+- **Forward:** Vector can forward processed data to various destinations, including ClickHouse, for storage and further processing.
+
+#### Vector Configuration
+
+Vector is configured to:
+- Collect logs from the example application
+- Transform and structure log data
+- Forward processed logs to ClickHouse
+
+Key configuration file: `vector/vector.yaml`
+
+### Grafana
+
+Grafana is an open-source platform for monitoring and observability. It allows users to visualize and explore time series data, set alerts, and create dashboards to monitor their systems and applications.
+
+#### Setup
+
+In this project, Grafana is pre-configured with:
+
+- A ClickHouse data source, enabling it to query data stored in ClickHouse.
+- Sample dashboards for log visualization, providing out-of-the-box visual representations of log data.
+
+#### Customization
+
+Users can customize Grafana further by adding more data sources, creating custom dashboards, and setting up advanced alerting rules based on their specific monitoring needs.
+
+### Express.js Application
+
+The Express.js application is a simple web application that generates log messages. It uses the `winston` logger to write logs to a file.
+
 
 ## Support
 
