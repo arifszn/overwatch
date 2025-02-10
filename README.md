@@ -170,7 +170,21 @@ ClickHouse uses multiple ports for different protocols:
 - **Port 9000:** Native ClickHouse protocol, optimized for performance.
 - **Port 8123:** HTTP protocol, compatible with the MySQL protocol, making it accessible to a wider range of clients.
 
-Using both ports provides flexibility in how clients connect to ClickHouse, balancing between performance and compatibility.
+##### Using ClickHouse HTTP Endpoint
+
+ClickHouse provides an HTTP interface that allows you to interact with the database using standard HTTP requests. This is particularly useful for integrating ClickHouse with external systems.
+
+You can insert data into ClickHouse using an HTTP POST request. Below is an example of how to insert log data into a logs_otel table using curl:
+
+```bash
+curl -X POST 'http://localhost:8123/' --data-binary 'INSERT INTO logs_otel FORMAT JSONEachRow {"Timestamp": "2024-01-01 12:00:00", "SeverityText": "INFO", "SeverityNumber": 2, "Body": "This is a test log message", "ServiceName": "my_service", "TraceId": "123e4567-e89b-12d3-a456-426614174000", "SpanId": "123e4567-e89b-12d3-a456-426614174000", "ResourceAttributes": "{}", "LogAttributes": "{}"}'
+```
+
+You can also retrieve data from ClickHouse using an HTTP GET request. Below is an example of how to query:
+
+```bash
+curl 'http://localhost:8123/?query=SELECT+*+FROM+logs_otel'
+```
 
 #### Schema-on-Write vs. Schema-less
 
