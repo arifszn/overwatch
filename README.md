@@ -28,6 +28,33 @@ This project implements a modern logging infrastructure using:
 - **Grafana**: Visualization and monitoring platform
 - **Express.js**: Example application generating logs
 
+## Architecture
+
+```mermaid
+flowchart LR
+    subgraph App["Express.js Application"]
+        winston["Winston Logger"]
+    end
+    subgraph Collection["Log Collection"]
+        logfile["Log Files"]
+        vector["Vector Agent"]
+    end
+    subgraph Storage["Log Storage"]
+        clickhouse["ClickHouse DB"]
+    end
+    subgraph Visualization["Log Visualization"]
+        grafana["Grafana"]
+    end
+    winston -->|writes| logfile
+    vector -->|reads| logfile
+    vector -->|transforms & forwards| clickhouse
+    grafana -->|queries| clickhouse
+    style App fill:#e1f7d5
+    style Collection fill:#ffebbb
+    style Storage fill:#c9e4ff
+    style Visualization fill:#f7d5e1
+```
+
 ## Prerequisites
 
 - Docker
