@@ -216,6 +216,45 @@ Users can customize Grafana further by adding more data sources, creating custom
 
 The Express.js application is a simple web application that generates log messages. It uses the `winston` logger to write logs to a file.
 
+#### OpenTelemetry (OTel)
+
+OpenTelemetry (OTel) is an open-source observability framework that provides a set of tools, APIs, and SDKs for collecting, processing, and exporting telemetry data (logs, metrics, and traces).
+
+##### OpenTelemetry Schema
+
+The OpenTelemetry schema refers to the standardized structure and format for telemetry data, including traces, metrics, and logs. This schema defines how data should be structured, what fields should be included, and how different types of telemetry data relate to each other.
+
+For logs specifically, the OpenTelemetry log data model defines a standard set of fields and attributes that should be present in log records. This includes fields like timestamp, severity, body, attributes, and resource information. By adhering to this schema, different logging systems and tools can interchange log data in a standardized way, promoting interoperability and easing the integration between various components of a logging infrastructure.
+
+##### Benefits of Using OpenTelemetry Schema
+
+- **Standardization:** Ensures that your log data is consistent and can be easily understood and processed by different tools and systems that support the OTel schema.
+- **Interoperability:** Tools and platforms that support the OpenTelemetry schema can seamlessly integrate with each other, allowing for a more unified approach to monitoring and observability.
+- **Vendor Neutrality:** OpenTelemetry is vendor-neutral, meaning you're not locked into a specific vendor's ecosystem. This flexibility allows you to choose best-of-breed tools for different aspects of your monitoring stack.
+- **Easier Onboarding:** Standardized schemas make it easier for new team members or stakeholders to understand and work with the logging infrastructure, as they can rely on well-defined structures and conventions.
+
+##### Implementing OpenTelemetry Schema in Log Tables
+
+When designing log tables in a database like ClickHouse, adhering to the OpenTelemetry schema can help ensure that the data is structured in a way that is compatible with a wide range of tools and platforms.
+
+Here's an example of how you might structure a ClickHouse table to align with the OpenTelemetry log schema:
+
+```sql
+CREATE TABLE IF NOT EXISTS logs_otel
+(
+    Timestamp DateTime64(3),
+    SeverityText String,  -- OpenTelemetry equivalent of log level
+    SeverityNumber Int8,  -- Numeric representation of severity
+    Body String,  -- Log message
+    ServiceName String,  -- Service generating the log
+    TraceId String,  -- OpenTelemetry Trace ID (if available)
+    SpanId String,  -- OpenTelemetry Span ID (if available)
+    ResourceAttributes String,  -- JSON string for resource-level attributes
+    LogAttributes String  -- JSON string for structured log-specific attributes
+)
+ENGINE = MergeTree()
+ORDER BY (Timestamp);
+```
 
 ## Support
 
