@@ -215,11 +215,11 @@ Users can customize Grafana further by adding more data sources, creating custom
 
 The Express.js application is a simple web application that generates log messages. It uses the `winston` logger to write logs to a file.
 
-#### OpenTelemetry (OTel)
+### OpenTelemetry (OTel)
 
 OpenTelemetry (OTel) is an open-source observability framework that provides a set of tools, APIs, and SDKs for collecting, processing, and exporting telemetry data (logs, metrics, and traces).
 
-##### OpenTelemetry Schema
+#### OpenTelemetry Schema
 
 The OpenTelemetry schema refers to the standardized structure and format for telemetry data, including traces, metrics, and logs. This schema defines how data should be structured, what fields should be included, and how different types of telemetry data relate to each other.
 
