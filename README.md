@@ -102,7 +102,6 @@ Initial setup script: `clickhouse/init.sql`
 Grafana comes pre-configured with:
 - ClickHouse data source
 - Sample dashboards for log visualization
-- Basic alerting rules
 
 ## Deep Dive into Components
 
