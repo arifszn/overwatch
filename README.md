@@ -126,6 +126,45 @@ ClickHouse achieves high performance through several optimizations:
 
 A column-oriented database stores data by columns rather than by rows. This architecture is particularly advantageous for read-heavy workloads, such as analytics and reporting, where queries often aggregate data across many rows but only a few columns. By storing columns separately, the database can read and process only the necessary data, reducing I/O operations and improving query performance.
 
+##### Row-Oriented Storage vs. Column-Oriented Storage
+
+###### Row-Oriented Storage
+
+In a row-oriented database like MySQL, each row of data is stored together. This means that when you insert a record, all the column values for that record are saved in a single unit (row). If you query for that row, all the column data (e.g., name, age, email) is retrieved at once.
+
+Here's how it works for a MySQL table:
+
+| id | name | age | email |
+|----|------|-----|-------|
+| 1  | Alice | 30  | alice@email.com |
+| 2  | Bob   | 25  | bob@email.com   |
+
+When you store this data:
+- The row for **Alice** is stored as one unit, containing all the values: `1`, `Alice`, `30`, and `alice@email.com`.
+- The row for **Bob** is stored as another unit, containing: `2`, `Bob`, `25`, and `bob@email.com`.
+
+So, in a row-oriented system, you're storing and retrieving entire rows of data at once.
+
+###### Column-Oriented Storage
+
+In a column-oriented database like ClickHouse, the data is stored differently. Instead of storing each row together, the database stores each column separately.
+
+For example, with a table like this:
+
+| id | name | age | email |
+|----|------|-----|-------|
+| 1  | Alice | 30  | alice@email.com |
+| 2  | Bob   | 25  | bob@email.com   |
+
+In a column-oriented database, the data is stored as:
+
+- **id column:** 1, 2
+- **name column:** Alice, Bob
+- **age column:** 30, 25
+- **email column:** alice@email.com, bob@email.com
+
+Each column is stored separately, meaning that all the values for the name column are together, all the values for the age column are together, and so on. When querying, the database can retrieve only the necessary columns, making it more efficient for analytical queries (where you might only need a few columns).
+
 #### ClickHouse Engines
 
 ClickHouse supports several engines, but the most commonly used are:
