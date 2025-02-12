@@ -91,7 +91,6 @@ flowchart LR
 ## Prerequisites
 
 - Docker
-- Docker Compose
 - Git
 
 ## Quick Start
@@ -100,7 +99,7 @@ flowchart LR
 
 ```bash
 git clone https://github.com/arifszn/overwatch.git
-cd logging-infrastructure
+cd overwatch
 cp .env.example .env
 ```
 
