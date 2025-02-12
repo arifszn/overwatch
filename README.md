@@ -1,28 +1,20 @@
-# Overwatch - Logging Infrastructure
+<div align="center">
+    <h2 style="display: flex; align-items: center; gap: 8px; justify-content: center;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-database">
+            <ellipse cx="12" cy="5" rx="9" ry="3"/>
+            <path d="M3 5V19A9 3 0 0 0 21 19V5"/>
+            <path d="M3 12A9 3 0 0 0 21 12"/>
+        </svg> 
+        Overwatch
+    </h2>
+</div>
 
 A logging infrastructure setup using ClickHouse, Vector, and Grafana for efficient log aggregation, processing, and visualization.
-
-## Project Structure
-```
-├── docker-compose.yml          # Main Docker Compose file
-├── app/                        # Example Express.js app
-│   ├── app.js                  # Main file for the Express app
-│   ├── logger.js               # Logger for the Express app
-│   └── Dockerfile              # Dockerfile for the Express app
-├── clickhouse/                 # ClickHouse configurations
-│   ├── init.sql                # SQL script to create log tables
-│   └── Dockerfile              # Custom ClickHouse image (if needed)
-├── vector/                     # Vector configurations
-│   └── vector.yaml             # Vector configuration
-├── grafana/                    # Grafana configurations
-│   ├── provisioning/           # Grafana provisioning configurations
-│   └── dashboards/             # Grafana pre-configured dashboards
-└── README.md                   # Project documentation
-```
 
 ## Overview
 
 This project implements a modern logging infrastructure using:
+
 - **ClickHouse**: High-performance columnar database for log storage
 - **Vector**: Data pipeline tool for collecting and transforming logs
 - **Grafana**: Visualization and monitoring platform
@@ -55,6 +47,47 @@ flowchart LR
     style Visualization fill:#f7d5e1
 ```
 
+## Workflow
+
+### 1. Data Collection
+
+- Use an Express.js app to generate logs.
+- Send logs to Vector using file-based inputs.
+
+### 2. Data Transformation
+
+- Vector processes and enriches logs (e.g., parsing JSON, adding metadata).
+
+### 3. Data Storage
+
+- Vector sends processed logs to ClickHouse.
+
+### 4. Data Visualization
+
+- Connect Grafana to ClickHouse.
+- Create dashboards to visualize logs and metrics.
+
+<img src="https://github.com/user-attachments/assets/7bea8925-3a91-43d7-8cd5-b436e8ad3429" alt="Workflow" width="600px"/>
+
+## Project Structure
+
+```
+├── docker-compose.yml          # Main Docker Compose file
+├── app/                        # Example Express.js app
+│   ├── app.js                  # Main file for the Express app
+│   ├── logger.js               # Logger for the Express app
+│   └── Dockerfile              # Dockerfile for the Express app
+├── clickhouse/                 # ClickHouse configurations
+│   ├── init.sql                # SQL script to create log tables
+│   └── Dockerfile              # Custom ClickHouse image (if needed)
+├── vector/                     # Vector configurations
+│   └── vector.yaml             # Vector configuration
+├── grafana/                    # Grafana configurations
+│   ├── provisioning/           # Grafana provisioning configurations
+│   └── dashboards/             # Grafana pre-configured dashboards
+└── README.md                   # Project documentation
+```
+
 ## Prerequisites
 
 - Docker
@@ -64,6 +97,7 @@ flowchart LR
 ## Quick Start
 
 1. Clone the repository:
+
 ```bash
 git clone https://github.com/arifszn/overwatch.git
 cd logging-infrastructure
@@ -71,11 +105,13 @@ cp .env.example .env
 ```
 
 2. Start the infrastructure:
+
 ```bash
 docker-compose up -d
 ```
 
 3. Access the services:
+
 - Grafana: http://localhost:3001 (credentials: admin/password)
 - ClickHouse: localhost:8123 (HTTP) or localhost:9000 (native)
 - Example App: http://localhost:3000
@@ -83,23 +119,93 @@ docker-compose up -d
 ## Configuration
 
 ### Vector Configuration
+
 Vector is configured to:
+
 - Collect logs from the example application
 - Transform and structure log data
 - Forward processed logs to ClickHouse
 
 Key configuration file: `vector/vector.yaml`
 
+```yaml
+# Source: Read logs from the application log files
+sources:
+  app_logs:
+    type: file
+    include:
+      - /app/logs/*.log
+    read_from: beginning
+
+# Transform: Parse the logs into structured data
+transforms:
+  parse_logs:
+    type: remap
+    inputs:
+      - app_logs
+    source: |
+      parsed, err = parse_json(.message)
+      if err != null {
+        log("Failed to parse JSON", level: "error")
+      } else {
+        . = parsed
+      }
+
+# Sink: Send parsed logs to ClickHouse
+sinks:
+  clickhouse_sink:
+    type: clickhouse
+    inputs:
+      - parse_logs
+    endpoint: '${CLICKHOUSE_ENDPOINT}'
+    database: 'overwatch'
+    table: 'app_logs'
+    compression: gzip
+    format: json_each_row
+    auth:
+      strategy: basic
+      user: '${CLICKHOUSE_USER}'
+      password: '${CLICKHOUSE_PASSWORD}'
+    batch:
+      max_size: 1048576
+```
+
 ### ClickHouse Configuration
+
 ClickHouse is set up with:
+
 - Optimized table schema for log storage
 - Proper indexing for efficient queries
 - TTL policies for log retention
 
 Initial setup script: `clickhouse/init.sql`
 
+```sql
+-- Create a database
+CREATE DATABASE IF NOT EXISTS overwatch;
+
+-- Create a table to store app logs with OpenTelemetry schema
+CREATE TABLE IF NOT EXISTS overwatch.app_logs
+(
+    Timestamp DateTime64(3),
+    SeverityText String,  -- OpenTelemetry equivalent of log level
+    SeverityNumber Int8,  -- Numeric representation of severity
+    Body String,  -- Log message
+    ServiceName String,  -- Service generating the log
+    TraceId String,  -- OpenTelemetry Trace ID (if available)
+    SpanId String,  -- OpenTelemetry Span ID (if available)
+    ResourceAttributes String,  -- JSON string for resource-level attributes
+    LogAttributes String  -- JSON string for structured log-specific attributes
+)
+ENGINE = MergeTree()
+ORDER BY (Timestamp)
+TTL toDateTime(Timestamp) + INTERVAL 30 DAY; -- Auto cleanup after 30 days
+```
+
 ### Grafana Setup
+
 Grafana comes pre-configured with:
+
 - ClickHouse data source
 - Sample dashboards for log visualization
 
@@ -108,6 +214,8 @@ Grafana comes pre-configured with:
 ### ClickHouse
 
 ClickHouse is an open-source columnar database management system designed for large-scale analytics and business intelligence workloads. It is known for its high performance in processing and querying vast amounts of data.
+
+<img width="110" alt="Clickhouse" src="https://github.com/user-attachments/assets/c036be24-aeff-4c99-9f88-79b57ae81b28" />
 
 #### Protocol Support
 
@@ -122,6 +230,21 @@ ClickHouse achieves high performance through several optimizations:
 - **Native Compression:** Uses efficient compression algorithms that are optimized for both speed and space.
 - **Asynchronous I/O and Multi-threading:** Allows for concurrent reading and processing of data.
 
+#### Benchmark
+
+[The billion docs JSON Challenge](https://clickhouse.com/blog/json-bench-clickhouse-vs-mongodb-elasticsearch-duckdb-postgresql)
+
+<table>
+<tr>
+    <td align="center">
+    <img src="https://github.com/user-attachments/assets/492261de-9820-44bb-ac81-2450e9ca2db5" alt="Storage" width="600px" />
+    </td>
+    <td align="center">
+    <img src="https://github.com/user-attachments/assets/d5e6c8b6-65d5-46ed-9405-01956572bc8c" alt="Query" width="600px" />
+    </td>
+</tr>
+</table>
+
 #### Column-Oriented Database
 
 A column-oriented database stores data by columns rather than by rows. This architecture is particularly advantageous for read-heavy workloads, such as analytics and reporting, where queries often aggregate data across many rows but only a few columns. By storing columns separately, the database can read and process only the necessary data, reducing I/O operations and improving query performance.
@@ -134,12 +257,13 @@ In a row-oriented database like MySQL, each row of data is stored together. This
 
 Here's how it works for a MySQL table:
 
-| id | name | age | email |
-|----|------|-----|-------|
-| 1  | Alice | 30  | alice@email.com |
-| 2  | Bob   | 25  | bob@email.com   |
+| id  | name  | age | email           |
+| --- | ----- | --- | --------------- |
+| 1   | Alice | 30  | alice@email.com |
+| 2   | Bob   | 25  | bob@email.com   |
 
 When you store this data:
+
 - The row for **Alice** is stored as one unit, containing all the values: `1`, `Alice`, `30`, and `alice@email.com`.
 - The row for **Bob** is stored as another unit, containing: `2`, `Bob`, `25`, and `bob@email.com`.
 
@@ -151,10 +275,10 @@ In a column-oriented database like ClickHouse, the data is stored differently. I
 
 For example, with a table like this:
 
-| id | name | age | email |
-|----|------|-----|-------|
-| 1  | Alice | 30  | alice@email.com |
-| 2  | Bob   | 25  | bob@email.com   |
+| id  | name  | age | email           |
+| --- | ----- | --- | --------------- |
+| 1   | Alice | 30  | alice@email.com |
+| 2   | Bob   | 25  | bob@email.com   |
 
 In a column-oriented database, the data is stored as:
 
@@ -194,7 +318,7 @@ We will be using the **MergeTree** engine for this project.
 
 Time-to-Live (TTL) policies in ClickHouse allow automatic deletion of data after a specified period. This is useful for managing log data retention, ensuring that old logs are automatically removed to save storage space and maintain performance.
 
-```sql  
+```sql
 TTL toDateTime(Timestamp) + INTERVAL 30 DAY; -- Auto cleanup after 30 days
 ```
 
@@ -229,7 +353,6 @@ curl 'http://localhost:8123/?query=SELECT+*+FROM+logs_otel'
 
 ClickHouse is a schema-on-write database, meaning the schema is defined at the time of writing data. This approach allows for efficient storage and querying, as the database knows the structure of the data in advance. In contrast, schema-less databases like Cassandra offer more flexibility in data modeling but may sacrifice some performance and query efficiency.
 
-
 ### Vector
 
 Vector is a data pipeline tool that collects, transforms, and routes logs, metrics, and traces. It is designed to be highly efficient, reliable, and easy to configure.
@@ -243,11 +366,12 @@ Vector is a data pipeline tool that collects, transforms, and routes logs, metri
 #### Vector Configuration
 
 Vector is configured to:
+
 - Collect logs from the example application
 - Transform and structure log data
 - Forward processed logs to ClickHouse
 
-Key configuration file: `vector/vector.yaml`
+<img src="https://github.com/user-attachments/assets/7ac1e92e-39e7-4953-a6ec-12f6de572768" alt="Vector" width="600px"/>
 
 ### Grafana
 
@@ -259,6 +383,8 @@ In this project, Grafana is pre-configured with:
 
 - A ClickHouse data source, enabling it to query data stored in ClickHouse.
 - Sample dashboards for log visualization, providing out-of-the-box visual representations of log data.
+
+<img src="https://github.com/user-attachments/assets/dce325de-a146-47e2-82f6-1ecda5465fb7" alt="Grafana" width="600px"/>
 
 #### Customization
 
@@ -311,4 +437,5 @@ ORDER BY (Timestamp);
 ## Support
 
 For support and questions:
+
 - Create an issue in the repository
