@@ -6,7 +6,7 @@ A logging infrastructure setup using ClickHouse, Vector, and Grafana for efficie
 ```
 ├── docker-compose.yml          # Main Docker Compose file
 ├── app/                        # Example Express.js app
-│   ├── app.js                  # Main Express app
+│   ├── app.js                  # Main file for the Express app
 │   ├── logger.js               # Logger for the Express app
 │   └── Dockerfile              # Dockerfile for the Express app
 ├── clickhouse/                 # ClickHouse configurations
